@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.git
+.gitignore
+.env
+.vscode
+.idea
+*.md
+verify_structure.py
+ARCHITECTURE.md
+QUICKSTART.md
