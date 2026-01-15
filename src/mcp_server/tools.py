@@ -1,4 +1,5 @@
 """MCP Tool definitions"""
+
 import json
 import mcp.types as types
 from .server import mcp_server
@@ -53,7 +54,7 @@ async def list_tools() -> list[types.Tool]:
                 },
                 "required": ["student_id"],
             },
-        )
+        ),
     ]
 
 
@@ -61,51 +62,57 @@ async def list_tools() -> list[types.Tool]:
 async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     """
     Execute an MCP tool
-    
+
     Args:
         name: Tool name
         arguments: Tool arguments
-        
+
     Returns:
         List of TextContent results
     """
     if name == "get_filtered_courses":
-        student_id = arguments.get("student_id")
-        course_code = arguments.get("course_code")
-        week = arguments.get("week")
-
-        # Fetch courses
-        courses_data = CourseService.fetch_courses(student_id)
-
-        # Filter by course_code if provided
-        if course_code:
-            courses_data = CourseService.filter_by_course_code(courses_data, course_code)
-
-        # Format response
-        result = CourseService.format_course_response(courses_data, week=week)
+        result = await get_filtered_courses(arguments)
 
         return [
             types.TextContent(
                 type="text", text=json.dumps(result, ensure_ascii=False, indent=2)
             )
         ]
-    
+
     if name == "build_ics_file":
-        student_id = arguments.get("student_id")
-        course_code = arguments.get("course_code")
-        week = arguments.get("week")
-
-        # Fetch courses
-        courses_data = CourseService.fetch_courses(student_id)
-
-        # Build ICS calendar
-        ics_data = CalendarService.build_ics_calendar(courses_data, course_code, week)
-
-        return [
-            types.TextContent(
-                type="text",
-                text=ics_data
-            )
-        ]
+        ics_data = await build_ics_file(arguments)
+        return [types.TextContent(type="text", text=ics_data)]
 
     raise ValueError(f"Herramienta desconocida: {name}")
+
+
+async def build_ics_file(arguments: dict) -> str:
+    student_id = arguments.get("student_id")
+    course_code = arguments.get("course_code")
+    week = arguments.get("week")
+
+    # Fetch courses
+    courses_data = CourseService.fetch_courses(student_id)
+
+    # Build ICS calendar
+    ics_data = CalendarService.build_ics_calendar(courses_data, course_code, week)
+
+    return ics_data
+
+
+async def get_filtered_courses(arguments) -> dict:
+    student_id = arguments.get("student_id")
+    course_code = arguments.get("course_code")
+    week = arguments.get("week")
+
+    # Fetch courses
+    courses_data = CourseService.fetch_courses(student_id)
+
+    # Filter by course_code if provided
+    if course_code:
+        courses_data = CourseService.filter_by_course_code(courses_data, course_code)
+
+    # Format response
+    result = CourseService.format_course_response(courses_data, week=week)
+
+    return result
