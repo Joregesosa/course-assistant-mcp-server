@@ -9,7 +9,7 @@ class Assignment(BaseModel):
     points_possible_decimal: float
     description: str
     submission_type: str
-    due_date: str
+    due_on: str
     instructions: Optional[str] = None
 
 

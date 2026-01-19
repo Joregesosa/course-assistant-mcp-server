@@ -5,6 +5,7 @@ import mcp.types as types
 from .server import mcp_server
 from src.services.course_service import CourseService
 from src.services.calendar_service import CalendarService
+from src.config import DEFAULT_STUDENT_ID
 
 
 @mcp_server.list_tools()
@@ -41,7 +42,7 @@ async def list_tools() -> list[types.Tool]:
                 "properties": {
                     "student_id": {
                         "type": "string",
-                        "description": "Unique identifier of the student (required)",
+                        "description": "Unique identifier of the student (optional, uses default if not provided)",
                     },
                     "course_code": {
                         "type": "string",
@@ -52,7 +53,7 @@ async def list_tools() -> list[types.Tool]:
                         "description": "Optional week number to filter course content (e.g., '1', '5', '7')",
                     },
                 },
-                "required": ["student_id"],
+                "required": [],
             },
         ),
     ]
@@ -87,12 +88,12 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
 
 
 async def build_ics_file(arguments: dict) -> str:
-    student_id = arguments.get("student_id")
+    student_id = arguments.get("student_id", DEFAULT_STUDENT_ID)
     course_code = arguments.get("course_code")
     week = arguments.get("week")
 
     # Fetch courses
-    courses_data = CourseService.fetch_courses(student_id)
+    courses_data = CourseService().fetch_courses(student_id)
 
     # Build ICS calendar
     ics_data = CalendarService.build_ics_calendar(courses_data, course_code, week)
@@ -101,12 +102,12 @@ async def build_ics_file(arguments: dict) -> str:
 
 
 async def get_filtered_courses(arguments) -> dict:
-    student_id = arguments.get("student_id")
+    student_id = arguments.get("student_id", DEFAULT_STUDENT_ID)
     course_code = arguments.get("course_code")
     week = arguments.get("week")
 
     # Fetch courses
-    courses_data = CourseService.fetch_courses(student_id)
+    courses_data = CourseService().fetch_courses(student_id)
 
     # Filter by course_code if provided
     if course_code:

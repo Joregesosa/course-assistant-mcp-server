@@ -51,7 +51,7 @@ async def read_resource(uri: str) -> str:
         student_id = uri_str.replace("students://", "").replace("/courses", "")
 
         # Fetch courses
-        courses_data = CourseService.fetch_courses(student_id)
+        courses_data = CourseService().fetch_courses(student_id)
         basic_courses = CourseService.get_basic_course_info(courses_data)
 
         current_week = courses_data[0]["current_week"] if courses_data else "1"

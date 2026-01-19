@@ -17,7 +17,7 @@ COURSES_API_URL = os.getenv("COURSES_API_URL", "")
 
 # MCP Server configuration
 MCP_SERVER_NAME = os.getenv("MCP_SERVER_NAME", "student-ai-server")
-DEFAULT_STUDENT_ID = os.getenv("DEFAULT_STUDENT_ID", "student_123")  # Student ID por defecto para pruebas
+DEFAULT_STUDENT_ID = os.getenv("DEFAULT_STUDENT_ID", "30040229")  # Student ID por defecto para pruebas
 
 # FastAPI configuration
 API_TITLE = "MCP Student Server"

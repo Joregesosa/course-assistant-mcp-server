@@ -1,6 +1,13 @@
 """Main entry point for the MCP Student Server"""
 import sys
+import logging
 from pathlib import Path
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Add project root to Python path
 project_root = Path(__file__).resolve().parent.parent
@@ -8,27 +15,79 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from fastapi import FastAPI, Request
-from starlette.routing import Route, Mount
+from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import Response
 from src.config import API_TITLE, API_VERSION
-from src.routes.mcp_routes import handle_sse, transport
+from src.routes.mcp_routes import handle_streamable_http, mcp_lifespan
 
 # Import MCP components to register decorators
 import src.mcp_server.resources  # noqa: F401
 import src.mcp_server.tools  # noqa: F401
 
-# Initialize FastAPI app
-app = FastAPI(title=API_TITLE, version=API_VERSION)
+# Initialize FastAPI app with lifespan
+app = FastAPI(title=API_TITLE, version=API_VERSION, lifespan=mcp_lifespan)
+
+# Add CORS middleware for Copilot Studio
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Ajustar según tus necesidades de seguridad
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Mcp-Session-Id"],  # Importante para MCP
+)
 
 
-# Register MCP routes
-@app.get("/sse")
-async def sse_endpoint(request: Request):
-    """SSE endpoint for MCP connections"""
-    return await handle_sse(request)
-
-
-# Mount the messages handler
-app.mount("/messages", transport.handle_post_message)
+# Register MCP endpoint directly (sin Mount para evitar redirect)
+@app.post("/mcp")
+async def mcp_endpoint(request: Request):
+    """MCP Streamable HTTP endpoint for Copilot Studio"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Log del request para debugging
+    body = await request.body()
+    logger.info(f"Received POST /mcp - Content-Type: {request.headers.get('content-type')}")
+    logger.info(f"Body length: {len(body)}")
+    logger.info(f"Body: {body[:500]}")  # Primeros 500 bytes
+    
+    # Capturar headers y body de la respuesta
+    response_headers = {}
+    response_body = []
+    status_code = 200
+    
+    async def send_wrapper(message):
+        nonlocal status_code
+        if message["type"] == "http.response.start":
+            status_code = message.get("status", 200)
+            for header_name, header_value in message.get("headers", []):
+                response_headers[header_name.decode()] = header_value.decode()
+        elif message["type"] == "http.response.body":
+            body = message.get("body", b"")
+            if body:
+                response_body.append(body)
+    
+    # Necesitamos recrear el receive porque ya leímos el body
+    async def receive_wrapper():
+        return {
+            "type": "http.request",
+            "body": body,
+            "more_body": False
+        }
+    
+    await handle_streamable_http(request.scope, receive_wrapper, send_wrapper)
+    
+    # Log de la respuesta
+    content = b"".join(response_body)
+    logger.info(f"Response status: {status_code}")
+    logger.info(f"Response body: {content[:500]}")
+    
+    # Construir la respuesta con los headers correctos
+    return Response(
+        content=content,
+        status_code=status_code,
+        headers=response_headers
+    )
 
 
 @app.get("/")

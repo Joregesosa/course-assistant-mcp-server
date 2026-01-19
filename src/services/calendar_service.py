@@ -61,7 +61,7 @@ class CalendarService:
         event.add("description", description)
 
         # Parse the due date
-        due_date_str = assignment["due_date"]
+        due_date_str = assignment["due_on"]
         due_datetime_utc = datetime.strptime(
             due_date_str, "%Y-%m-%dT%H:%M:%SZ"
         ).replace(tzinfo=pytz.utc)
