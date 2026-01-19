@@ -1,5 +1,6 @@
 """MCP-related FastAPI routes"""
 from fastapi import Request
+from starlette.responses import Response
 from mcp.server.sse import SseServerTransport
 from src.mcp_server.server import mcp_server
 from src.config import SSE_ENDPOINT
@@ -16,9 +17,9 @@ async def handle_sse(request: Request):
         await mcp_server.run(
             read_stream, write_stream, mcp_server.create_initialization_options()
         )
+    return Response()
 
 
 async def handle_messages(request: Request):
     """Handle POST messages for MCP"""
     await transport.handle_post_message(request.scope, request.receive, request._send)
-    return {"status": "ok"}
