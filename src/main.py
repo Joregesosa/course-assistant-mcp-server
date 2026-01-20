@@ -2,18 +2,6 @@
 import sys
 import logging
 from pathlib import Path
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-# Add project root to Python path
-project_root = Path(__file__).resolve().parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
-
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
@@ -23,6 +11,12 @@ from src.routes.mcp_routes import handle_streamable_http, mcp_lifespan
 # Import MCP components to register decorators
 import src.mcp_server.resources  # noqa: F401
 import src.mcp_server.tools  # noqa: F401
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(title=API_TITLE, version=API_VERSION, lifespan=mcp_lifespan)

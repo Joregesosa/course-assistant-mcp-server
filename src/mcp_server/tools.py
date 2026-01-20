@@ -5,7 +5,6 @@ import mcp.types as types
 from .server import mcp_server
 from src.services.course_service import CourseService
 from src.services.calendar_service import CalendarService
-from src.config import DEFAULT_STUDENT_ID
 
 
 @mcp_server.list_tools()
@@ -88,7 +87,7 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
 
 
 async def build_ics_file(arguments: dict) -> str:
-    student_id = arguments.get("student_id", DEFAULT_STUDENT_ID)
+    student_id = arguments.get("student_id")
     course_code = arguments.get("course_code")
     week = arguments.get("week")
 
@@ -102,7 +101,7 @@ async def build_ics_file(arguments: dict) -> str:
 
 
 async def get_filtered_courses(arguments) -> dict:
-    student_id = arguments.get("student_id", DEFAULT_STUDENT_ID)
+    student_id = arguments.get("student_id")
     course_code = arguments.get("course_code")
     week = arguments.get("week")
 

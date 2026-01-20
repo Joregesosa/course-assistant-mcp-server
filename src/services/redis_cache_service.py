@@ -4,6 +4,7 @@ import time
 import redis
 import logging
 from typing import Any, Optional
+from src.config import AzureForRedisHost, AzureForRedisPort, AzureForRedisPassword
 
 
 class StudentCache:
@@ -30,9 +31,9 @@ class StudentCache:
         if StudentCache._redis_client is None:
             try:
                 StudentCache._redis_client = redis.StrictRedis(
-                    host=os.environ.get("AzureForRedisHost"),
-                    port=int(os.environ.get("AzureForRedisPort", 6380)),
-                    password=os.environ.get("AzureForRedisPassword"),
+                    host=AzureForRedisHost,
+                    port=int(AzureForRedisPort),
+                    password=AzureForRedisPassword,
                     decode_responses=True,
                     ssl=True,
                     socket_connect_timeout=2,

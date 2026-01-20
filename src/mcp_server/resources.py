@@ -13,8 +13,8 @@ async def list_resource_templates() -> list[types.ResourceTemplate]:
     return [
         types.ResourceTemplate(
             uriTemplate="students://{student_id}/courses",
-            name="Cursos del Estudiante",
-            description="Recupera la lista de cursos para un ID de estudiante específico",
+            name="student courses",
+            description="Retrieve the list of courses for a specific student ID", 
             mimeType="application/json",
         )
     ]
@@ -26,8 +26,8 @@ async def list_resources() -> list[types.Resource]:
     return [
         types.Resource(
             uri="students://example/courses",
-            name="Cursos de Estudiante",
-            description="Lista de cursos de un estudiante",
+            name="student courses",
+            description="List of courses for a student",
             mimeType="text/plain",
         )
     ]
